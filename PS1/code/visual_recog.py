@@ -1,3 +1,5 @@
+"""Function definitions for building a system of visual words."""
+
 import os, math, multiprocessing
 from os.path import join
 from copy import copy

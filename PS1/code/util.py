@@ -52,3 +52,18 @@ def visualize_wordmap(wordmap, out_path=None):
     plt.show()
     if out_path:
         plt.savefig(out_path, pad_inches=0)
+
+def c2_debug():
+    """Return true if custom debugging should be performed."""
+    return True;
+
+def dbg_assert(statement, msg=""):
+    """Perform an assertion if debugging is on."""
+    if c2_debug():
+        assert statement, msg
+        
+def dbg_warn(msg):
+    """Print the given warning message if debugging is on."""
+    if c2_debug():
+        import warnings
+        warnings.warn(msg)

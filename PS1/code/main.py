@@ -1,3 +1,5 @@
+"""Main function for running the system."""
+
 from os.path import join
 
 import numpy as np
@@ -14,15 +16,21 @@ def main():
     opts = get_opts()
 
     ## Q1.1
-    img_path = join(opts.data_dir, 'kitchen/sun_aasmevtpkslccptd.jpg')
+    # Create a copy of the opts and modify the number of scales (as requested by 1.1.2):
+    import argparse
+    opts_112 = argparse.Namespace(**vars(opts))
+    opts_112.filter_scales = [1,2,3,4,5]
+    
+    # Run code for 1.1.2:
+    img_path = join(opts_112.data_dir, 'kitchen/sun_aasmevtpkslccptd.jpg')
     img = Image.open(img_path)
     img = np.array(img).astype(np.float32)/255
-    filter_responses = visual_words.extract_filter_responses(opts, img)
-    util.display_filter_responses(opts, filter_responses)
+    filter_responses = visual_words.extract_filter_responses(opts_112, img)
+    util.display_filter_responses(opts_112, filter_responses)
 
     ## Q1.2
-    # n_cpu = util.get_num_CPU()
-    # visual_words.compute_dictionary(opts, n_worker=n_cpu)
+    n_cpu = util.get_num_CPU()
+    visual_words.compute_dictionary(opts, n_worker=n_cpu)
     
     ## Q1.3
     # img_path = join(opts.data_dir, 'kitchen/sun_aasmevtpkslccptd.jpg')
