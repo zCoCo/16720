@@ -44,6 +44,15 @@ def get_opts():
                         help='# of layers in spatial pyramid matching (SPM)')
 
     ## Additional options (add your own hyperparameters here)
+    parser.add_argument('--custom-dict-name', type=str, default=None,
+                        help='Custom name for custom dictionary')
+    parser.add_argument('--custom-system-name', type=str, default=None,
+                        help='Custom name for custom trained system')
+
+    parser.add_argument('--rebuild-dictionary', type=bool, default=False,
+                        help='Whether to rebuild the dictionary')
+    parser.add_argument('--rebuild-recognition-system', type=bool, default=False,
+                        help='Whether to relearn the recognition system')
 
     ##
     opts = parser.parse_args()

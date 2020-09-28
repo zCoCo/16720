@@ -84,15 +84,12 @@ def compute_dictionary_one_image(args):
     
     file_idx, file_name = args
     
-    print('Opening {}'.format(file_idx))
+    util.dbg_print('\t Processing Image {}'.format(file_idx))
     
     sample_pixel_generator = compute_dictionary__worker_cache.sample_pixel_generator
 
     opts = compute_dictionary__worker_cache
     data_dir = opts.data_dir
-    #feat_dir = opts.feat_dir
-    #out_dir = opts.out_dir
-    #K = opts.K
     alpha = opts.alpha
     
     image = Image.open(join(data_dir, file_name))
@@ -137,13 +134,12 @@ def compute_dictionary(opts, n_worker=1):
     * dictionary : numpy.ndarray of shape (K,3F)
     """
     data_dir = opts.data_dir
-    #feat_dir = opts.feat_dir
     out_dir = opts.out_dir
     K = opts.K
 
     train_files = open(join(data_dir, 'train_files.txt')).read().splitlines()
     
-    print('Spooling...')
+    util.dbg_print('Pooling...')
     # Process filter responses in parallel:
     pool = multiprocessing.Pool(n_worker, initializer=compute_dictionary__initialize_workers, initargs=(opts,))
     pool_data = zip(range(len(train_files)), train_files)
@@ -154,18 +150,15 @@ def compute_dictionary(opts, n_worker=1):
     # Stack results:
     sampled_filter_responses = np.vstack(result)
     
-    print('Clustering...')
+    util.dbg_print('Clustering...')
     # Cluster results:
     kmeans = sklearn.cluster.KMeans(n_clusters=K, n_jobs=n_worker).fit(sampled_filter_responses)
     dictionary = kmeans.cluster_centers_
     
     # Save and output results:
     output_name = 'dictionary.npy'
-    try:
-        if opts.custom_dict_name is not None:
-            output_name = opts.custom_dict_name
-    except:
-        pass # leave as default
+    if opts.custom_dict_name is not None:
+        output_name = opts.custom_dict_name
     np.save(join(out_dir, output_name), dictionary)
     return dictionary
 
@@ -199,7 +192,8 @@ def get_visual_words(opts, img, dictionary):
     
     return wordmap
             
-# DEV:
+# DEV TESTING:
+"""
 if __name__ == '__main__':
     from opts import get_opts
     opts = get_opts()
@@ -210,4 +204,5 @@ if __name__ == '__main__':
     img = np.array(img).astype(np.float32)/255
     
     wordmap = get_visual_words(opts, img, dictionary)
+"""
 

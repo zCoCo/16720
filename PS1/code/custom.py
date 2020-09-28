@@ -21,8 +21,10 @@ def main():
     opts.alpha = int((2*256/(16*3))**2) # at least 2x2 grid of points per 3 sigma gaussian (except for largest)
     
     # Toggle on to rebuild dictionary (warning: expensive):
-    rebuild_dictionary = True
+    opts.rebuild_dictionary = False
     opts.custom_dict_name = 'dictionary_plusplus_K40_a4Gis113.npy' # if not given, default 'dictionary.npy' will be overriden
+    opts.rebuild_recognition_system = True
+    opts.custom_system_name = 'trained_system_plusplus_K40_a4Gis113.npz'
 
     ## Q1.1
     # Create a copy of the opts and modify the number of scales (as requested by 1.1.2):
@@ -39,7 +41,7 @@ def main():
 
     ## Q1.2
     n_cpu = util.get_num_CPU()
-    if rebuild_dictionary:
+    if opts.rebuild_dictionary:
         visual_words.compute_dictionary(opts, n_worker=n_cpu)
     
     ## Q1.3
@@ -56,8 +58,9 @@ def main():
     util.c2_compare_images2wordmaps(images, wordmaps)
 
     ## Q2.1-2.4
-    # n_cpu = util.get_num_CPU()
-    # visual_recog.build_recognition_system(opts, n_worker=n_cpu)
+    n_cpu = util.get_num_CPU()
+    if opts.rebuild_recognition_system:
+        visual_recog.build_recognition_system(opts, n_worker=n_cpu)
 
     ## Q2.5
     # n_cpu = util.get_num_CPU()
