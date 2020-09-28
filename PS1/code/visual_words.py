@@ -85,8 +85,6 @@ def compute_dictionary_one_image(args):
     file_idx, file_name = args
     
     sample_pixel_generator = compute_dictionary__worker_cache.sample_pixel_generator
-    
-    print(sample_pixel_generator)
 
     opts = compute_dictionary__worker_cache
     data_dir = opts.data_dir
