@@ -16,6 +16,7 @@ def main():
     opts = get_opts()
 
     # Custom tuned parameters:
+    opts.K = 40 #80 # enough for ten classes pre scene
     opts.filter_scales = [1,2,4,16,128]
     opts.alpha = int((2*256/(16*3))**2) # at least 2x2 grid of points per 3 sigma gaussian (except for largest)
     
