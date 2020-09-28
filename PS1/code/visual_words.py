@@ -7,6 +7,7 @@ import numpy as np
 from PIL import Image
 import scipy.ndimage
 import skimage.color
+import sklearn
 
 import util
 
@@ -74,16 +75,46 @@ def extract_filter_responses(opts, img):
     
 
 def compute_dictionary_one_image(args):
-    '''
+    """
     Extracts a random subset of filter responses of an image and save it to disk
     This is a worker function called by compute_dictionary
 
     Your are free to make your own interface based on how you implement compute_dictionary
-    '''
+    """
+    
     file_idx, file_name = args
+    
+    sample_pixel_generator = compute_dictionary__worker_cache.sample_pixel_generator
 
-    print("File name: {}".format(file_name))
-    return file_idx*2
+    opts = compute_dictionary__worker_cache
+    data_dir = opts.data_dir
+    feat_dir = opts.feat_dir
+    out_dir = opts.out_dir
+    K = opts.K
+    alpha = opts.alpha
+    
+    print("Working...")
+    image = Image.open(join(data_dir, file_name))
+    image = np.asarray(image)
+    filter_responses = extract_filter_responses(opts, image)
+    
+    num_responses = filter_responses.shape[2] # 3*F
+    
+    sampled_responses = np.zeros((alpha, num_responses)) # preallocate for speed
+    for response_idx in range(num_responses):
+        flattened = filter_responses[:,:,response_idx].reshape(-1)
+        shape = image.shape
+        pixels = (sample_pixel_generator*shape[0]).astype(np.int)
+        sampled_responses[:,response_idx] = flattened[pixels]
+
+    # just going to return as list using pool map and np.vstack results instead of saving to temp file
+    return sampled_responses
+
+def compute_dictionary__initialize_workers(opts):
+    global compute_dictionary__worker_cache
+    compute_dictionary__worker_cache = opts
+    # pixels to sample (consistently "random" across all images, will just be scaled by image size):
+    compute_dictionary__worker_cache.sample_pixel_generator = np.random.rand(opts.alpha)
 
 def compute_dictionary(opts, n_worker=1):
     '''
@@ -104,23 +135,26 @@ def compute_dictionary(opts, n_worker=1):
 
     train_files = open(join(data_dir, 'train_files.txt')).read().splitlines()
     
-    # #### TAKE SUBSET FOR DEV TESTINGV PRUPOSES:
+    # #### TAKE SUBSET FOR DEV TESTING PRUPOSES:
     train_files = train_files[:5]
     
     # Process filter responses in parallel:
-    pool = multiprocessing.Pool(n_worker)
+    pool = multiprocessing.Pool(n_worker, initializer=compute_dictionary__initialize_workers, initargs=(opts,))
     pool_data = zip(range(len(train_files)), train_files)
     result = pool.map(compute_dictionary_one_image, pool_data)
     pool.close()
     pool.join()
     
-    dictionary = result
-    # return dictionary
+    # Stack results:
+    sampled_filter_responses = np.vstack(result)
     
-    pass
-
-    ## example code snippet to save the dictionary
-    # np.save(join(out_dir, 'dictionary.npy'), dictionary)
+    # Cluster results:
+    kmeans = sklearn.cluster.KMeans(nclusters=K, n_jobs=n_worker).fit(sampled_filter_responses)
+    dictionary = kmeans.cluster_centers_
+    
+    # Save and output results:
+    np.save(join(out_dir, 'dictionary.npy'), dictionary)
+    return dictionary
 
 def get_visual_words(opts, img, dictionary):
     '''
