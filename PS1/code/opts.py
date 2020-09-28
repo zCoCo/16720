@@ -53,10 +53,6 @@ def get_opts():
                         help='Whether to rebuild the dictionary')
     parser.add_argument('--rebuild-recognition-system', type=bool, default=False,
                         help='Whether to relearn the recognition system')
-    
-    
-    parser.add_argument('--use-cosine-similarity', type=bool, default=False,
-                        help='Whether to cosine similarity for histogram similarity.')
 
     ##
     opts = parser.parse_args()

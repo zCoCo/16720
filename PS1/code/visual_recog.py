@@ -8,7 +8,6 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 
-import scipy.ndimage
 import sklearn.metrics
 
 import visual_words
@@ -201,17 +200,6 @@ def distance_to_set(word_hist, histograms):
         sim[t] = 1. - np.sum(np.minimum(word_hist, histograms[t,:])) # actually distance was requested
     return sim
     
-
-def distance_to_set_wrapper(opts, word_hist, histograms):
-    """Use a different similarity algorithm if requested by opts."""
-    if opts.use_cosine_similarity:
-        shape = histograms.shape
-        sim = np.zeros(shape[0])
-        for t in range(shape[0]):
-            sim[t] = scipy.spatial.distance.cosine(word_hist, histograms[t,:]) # actually distance was requested
-        return sim
-    else:
-        return distance_to_set(word_hist, histograms)
     
 def evaluate_system__predict_scene(args):
     """Worker thread to extract image features as part of a Pool."""
@@ -226,7 +214,7 @@ def evaluate_system__predict_scene(args):
     
     word_hist = get_image_feature(opts, img_path, dictionary)
     
-    distance_to_features = distance_to_set_wrapper(opts, word_hist, features)
+    distance_to_features = distance_to_set(word_hist, features)
     
     min_index = np.argmin(distance_to_features)
     
