@@ -15,6 +15,14 @@ from opts import get_opts
 def main():
     opts = get_opts()
 
+    # Custom tuned parameters:
+    opts.filter_scales = [1,2,4,16,128]
+    opts.alpha = int((2*256/(16*3))**2) # at least 2x2 grid of points per 3 sigma gaussian (except for largest)
+    
+    # Toggle on to rebuild dictionary (warning: expensive):
+    rebuild_dictionary = True
+    opts.custom_dict_name = 'dictionary_plusplus_K40_a4Gis113.npy' # if not given, default 'dictionary.npy' will be overriden
+
     ## Q1.1
     # Create a copy of the opts and modify the number of scales (as requested by 1.1.2):
     import argparse
@@ -30,12 +38,13 @@ def main():
 
     ## Q1.2
     n_cpu = util.get_num_CPU()
-    visual_words.compute_dictionary(opts, n_worker=n_cpu)
+    if rebuild_dictionary:
+        visual_words.compute_dictionary(opts, n_worker=n_cpu)
     
     ## Q1.3
     # (Modified to show 3 images and wordmaps side by side as requested)
     img_addrs = ('kitchen/sun_aasmevtpkslccptd.jpg', 'laundromat/sun_aakuktqwgbgavllp.jpg', 'highway/sun_abzhjprcojyuuqci.jpg')
-    dictionary = np.load(join(opts.out_dir, 'dictionary.npy'))
+    dictionary = np.load(join(opts.out_dir, opts.custom_dict_name))
     images = []
     wordmaps = []
     for img_addr in (img_addrs):

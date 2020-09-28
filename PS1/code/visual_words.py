@@ -84,6 +84,8 @@ def compute_dictionary_one_image(args):
     
     file_idx, file_name = args
     
+    print('Opening {}'.format(file_idx))
+    
     sample_pixel_generator = compute_dictionary__worker_cache.sample_pixel_generator
 
     opts = compute_dictionary__worker_cache
@@ -141,6 +143,7 @@ def compute_dictionary(opts, n_worker=1):
 
     train_files = open(join(data_dir, 'train_files.txt')).read().splitlines()
     
+    print('Spooling...')
     # Process filter responses in parallel:
     pool = multiprocessing.Pool(n_worker, initializer=compute_dictionary__initialize_workers, initargs=(opts,))
     pool_data = zip(range(len(train_files)), train_files)
@@ -151,6 +154,7 @@ def compute_dictionary(opts, n_worker=1):
     # Stack results:
     sampled_filter_responses = np.vstack(result)
     
+    print('Clustering...')
     # Cluster results:
     kmeans = sklearn.cluster.KMeans(n_clusters=K, n_jobs=n_worker).fit(sampled_filter_responses)
     dictionary = kmeans.cluster_centers_
