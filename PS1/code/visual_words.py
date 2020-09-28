@@ -84,7 +84,7 @@ def compute_dictionary_one_image(args):
     
     file_idx, file_name = args
     
-    util.dbg_print('\t Processing Image {}'.format(file_idx))
+    util.dbg_print('\t Adding Image {} to Dictionary'.format(file_idx))
     
     sample_pixel_generator = compute_dictionary__worker_cache.sample_pixel_generator
 

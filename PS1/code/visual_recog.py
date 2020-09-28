@@ -8,6 +8,8 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 
+import sklearn.metrics
+
 import visual_words
 
 import util
@@ -105,7 +107,6 @@ def get_image_feature(opts, img_path, dictionary):
     * img_path  : path of image file to read
     * dictionary: numpy.ndarray of shape (K, 3F)
 
-
     [output]
     * feature: numpy.ndarray of shape (K)
     """
@@ -117,13 +118,12 @@ def recognition_system__get_image_feature(args):
     """Worker thread to extract image features as part of a Pool."""
     img_idx, img_path = args
     
-    util.dbg_print('\t Processing Image {}'.format(img_idx))
+    util.dbg_print('\t Extracting Feature from Image {}'.format(img_idx))
     
     opts = recognition_system__worker_cache['opts']
     dictionary = recognition_system__worker_cache['dictionary']
     
     return get_image_feature(opts, img_path, dictionary)
-    
 
 def recognition_system__initialize_workers(opts, dictionary):
     """
@@ -192,11 +192,41 @@ def distance_to_set(word_hist, histograms):
     * sim: numpy.ndarray of shape (N)
     """
     shape = histograms.shape
-    sim = shape[0]
+    sim = np.zeros(shape[0])
     for t in range(shape[0]):
         sim[t] = 1 - np.amax(np.minimum(word_hist, histograms[t,:])) # actually distance was requested
     return sim
     
+    
+def evaluate_system__predict_scene(args):
+    """Worker thread to extract image features as part of a Pool."""
+    img_idx, img_path = args
+    
+    util.dbg_print('\t Predicting Scene for Image {}'.format(img_idx))
+    
+    opts = evaluate_system__worker_cache['opts']
+    dictionary = evaluate_system__worker_cache['dictionary']
+    features = evaluate_system__worker_cache['features']
+    labels = evaluate_system__worker_cache['labels']
+    
+    word_hist = get_image_feature(opts, img_path, dictionary)
+    
+    distance_to_features = distance_to_set(word_hist, features)
+    
+    min_index = np.argmin(distance_to_features)
+    
+    return labels[min_index]
+    
+
+def evaluate_system__initialize_workers(opts, dictionary, features, labels):
+    """
+    Initialize pool of the workers.
+    
+    Populates a global cache with values that need to be used by all of them 
+    and don't vary by worker.
+    """
+    global evaluate_system__worker_cache
+    evaluate_system__worker_cache = {"opts": opts, "dictionary": dictionary, "features": features, "labels": labels}
     
 def evaluate_recognition_system(opts, n_worker=1):
     '''
@@ -216,6 +246,8 @@ def evaluate_recognition_system(opts, n_worker=1):
 
     trained_system = np.load(join(out_dir, 'trained_system.npz'))
     dictionary = trained_system['dictionary']
+    features = trained_system['features']
+    labels = trained_system['labels']
 
     # using the stored options in the trained system instead of opts.py
     test_opts = copy(opts)
@@ -225,8 +257,19 @@ def evaluate_recognition_system(opts, n_worker=1):
     test_files = open(join(data_dir, 'test_files.txt')).read().splitlines()
     test_labels = np.loadtxt(join(data_dir, 'test_labels.txt'), np.int32)
 
-    # ----- TODO -----
-    pass
+    util.dbg_print('Pooling...')
+    # Process filter responses in parallel:
+    pool = multiprocessing.Pool(n_worker, initializer=evaluate_system__initialize_workers, initargs=(test_opts,dictionary,features,labels))
+    pool_data = zip(range(len(test_files)), test_files)
+    predictions = pool.map(evaluate_system__predict_scene, pool_data)
+    pool.close()
+    pool.join()
+    
+    util.dbg_print('Evaluating...')
+    conf = sklearn.metrics.confusion_matrix(test_labels, predictions)
+    accuracy = np.trace(conf) / np.sum(conf)
+    
+    return conf, accuracy
 
 # DEV TESTING:
 if __name__ == '__main__':
@@ -243,4 +286,5 @@ if __name__ == '__main__':
     #opts.L = 3
     #get_feature_from_wordmap_SPM(opts, wordmap)
     
-    build_recognition_system(opts, n_worker=util.get_num_CPU())
+    #build_recognition_system(opts, n_worker=util.get_num_CPU())
+    evaluate_recognition_system(opts, n_worker=util.get_num_CPU())
