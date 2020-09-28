@@ -93,7 +93,6 @@ def compute_dictionary_one_image(args):
     K = opts.K
     alpha = opts.alpha
     
-    print("Working...")
     image = Image.open(join(data_dir, file_name))
     image = np.asarray(image)
     filter_responses = extract_filter_responses(opts, image)
@@ -134,9 +133,6 @@ def compute_dictionary(opts, n_worker=1):
     K = opts.K
 
     train_files = open(join(data_dir, 'train_files.txt')).read().splitlines()
-    
-    # #### TAKE SUBSET FOR DEV TESTING PRUPOSES:
-    train_files = train_files[:5]
     
     # Process filter responses in parallel:
     pool = multiprocessing.Pool(n_worker, initializer=compute_dictionary__initialize_workers, initargs=(opts,))
