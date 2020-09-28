@@ -158,7 +158,13 @@ def compute_dictionary(opts, n_worker=1):
     dictionary = kmeans.cluster_centers_
     
     # Save and output results:
-    np.save(join(out_dir, 'dictionary.npy'), dictionary)
+    output_name = 'dictionary.npy'
+    try:
+        if opts.custom_dict_name is not None:
+            output_name = opts.custom_dict_name
+    except:
+        pass # leave as default
+    np.save(join(out_dir, output_name), dictionary)
     return dictionary
 
 def get_visual_words(opts, img, dictionary):
