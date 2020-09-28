@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 import scipy.ndimage
 import skimage.color
-import sklearn
+import sklearn.cluster
 
 import util
 
@@ -149,7 +149,7 @@ def compute_dictionary(opts, n_worker=1):
     sampled_filter_responses = np.vstack(result)
     
     # Cluster results:
-    kmeans = sklearn.cluster.KMeans(nclusters=K, n_jobs=n_worker).fit(sampled_filter_responses)
+    kmeans = sklearn.cluster.KMeans(n_clusters=K, n_jobs=n_worker).fit(sampled_filter_responses)
     dictionary = kmeans.cluster_centers_
     
     # Save and output results:
