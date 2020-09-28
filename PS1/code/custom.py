@@ -16,15 +16,17 @@ def main():
     opts = get_opts()
 
     # Custom tuned parameters:
-    opts.K = 40 #80 # enough for ten classes pre scene
-    opts.filter_scales = [1,2,4,16,128]
-    opts.alpha = int((2*256/(16*3))**2) # at least 2x2 grid of points per 3 sigma gaussian (except for largest)
+    opts.K = 80 # enough for ten classes pre scene
+    opts.filter_scales = [1,2,4,16]
+    opts.alpha = opts.K*4#int((2*256/(16*3))**2) # at least 2x2 grid of points per 3 sigma gaussian (except for largest)
+    opts.L = 4
     
     # Toggle on to rebuild dictionary (warning: expensive):
     opts.rebuild_dictionary = False
-    opts.custom_dict_name = 'dictionary_plusplus_K40_a4Gis113.npy' # if not given, default 'dictionary.npy' will be overriden
+    suffix = '_plusplus2_K80_a4K'
+    opts.custom_dict_name = 'dictionary'+suffix+'.npy' # if not given, default 'dictionary.npy' will be overriden
     opts.rebuild_recognition_system = True
-    opts.custom_system_name = 'trained_system_plusplus_K40_a4Gis113.npz'
+    opts.custom_system_name = 'trained_system'+suffix+'_L4'+'.npz'
 
     ## Q1.1
     # Create a copy of the opts and modify the number of scales (as requested by 1.1.2):
@@ -63,11 +65,11 @@ def main():
         visual_recog.build_recognition_system(opts, n_worker=n_cpu)
 
     ## Q2.5
-    # n_cpu = util.get_num_CPU()
-    # conf, accuracy = visual_recog.evaluate_recognition_system(opts, n_worker=n_cpu)
+    n_cpu = util.get_num_CPU()
+    conf, accuracy = visual_recog.evaluate_recognition_system(opts, n_worker=n_cpu)
     
-    # print(conf)
-    # print(accuracy)
+    print(conf)
+    print(accuracy)
     # np.savetxt(join(opts.out_dir, 'confmat.csv'), conf, fmt='%d', delimiter=',')
     # np.savetxt(join(opts.out_dir, 'accuracy.txt'), [accuracy], fmt='%g')
 

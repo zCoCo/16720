@@ -66,9 +66,9 @@ def get_feature_from_wordmap_SPM(opts, wordmap):
             nonlocal K
             weight = 0
             if l0 > 1:
-                weight = 2**(l0-L-1)
+                weight = 2.**(l0*1.-L*1.-1)
             else:
-                weight = 2**(-L)
+                weight = 2.**(-L*1.)
             # Record weighted responses for this chunk:
             # (not composing out of child chunk histograms b/c, even though 
             # there would be a performance boost, such compostion would cause 
@@ -173,7 +173,10 @@ def build_recognition_system(opts, n_worker=1):
     util.dbg_print('Exporting Trained System...')
 
     ## example code snippet to save the learned system
-    np.savez_compressed(join(out_dir, 'trained_system.npz'),
+    sys_name = 'trained_system.npz'
+    if opts.custom_system_name is not None:
+        sys_name = opts.custom_system_name
+    np.savez_compressed(join(out_dir, sys_name),
                         features=features,
                         labels=train_labels,
                         dictionary=dictionary,
@@ -244,7 +247,11 @@ def evaluate_recognition_system(opts, n_worker=1):
     data_dir = opts.data_dir
     out_dir = opts.out_dir
 
-    trained_system = np.load(join(out_dir, 'trained_system.npz'))
+
+    sys_name = 'trained_system.npz'
+    if opts.custom_system_name is not None:
+        sys_name = opts.custom_system_name
+    trained_system = np.load(join(out_dir, sys_name))
     dictionary = trained_system['dictionary']
     features = trained_system['features']
     labels = trained_system['labels']
@@ -272,6 +279,7 @@ def evaluate_recognition_system(opts, n_worker=1):
     return conf, accuracy
 
 # DEV TESTING:
+"""
 if __name__ == '__main__':
     from opts import get_opts
     opts = get_opts()
@@ -288,3 +296,4 @@ if __name__ == '__main__':
     
     #build_recognition_system(opts, n_worker=util.get_num_CPU())
     evaluate_recognition_system(opts, n_worker=util.get_num_CPU())
+"""
