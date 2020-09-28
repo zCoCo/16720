@@ -25,9 +25,8 @@ def main():
     opts.rebuild_dictionary = False
     suffix = '_plusplus2_K80_a4K'
     opts.custom_dict_name = 'dictionary'+suffix+'.npy' # if not given, default 'dictionary.npy' will be overriden
-    opts.rebuild_recognition_system = False
+    opts.rebuild_recognition_system = True
     opts.custom_system_name = 'trained_system'+suffix+'_L4'+'.npz'
-    opts.use_cosine_similarity = True
 
     ## Q1.1
     # Create a copy of the opts and modify the number of scales (as requested by 1.1.2):
