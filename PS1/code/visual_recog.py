@@ -194,7 +194,7 @@ def distance_to_set(word_hist, histograms):
     shape = histograms.shape
     sim = np.zeros(shape[0])
     for t in range(shape[0]):
-        sim[t] = 1 - np.amax(np.minimum(word_hist, histograms[t,:])) # actually distance was requested
+        sim[t] = 1. - np.sum(np.minimum(word_hist, histograms[t,:])) # actually distance was requested
     return sim
     
     
