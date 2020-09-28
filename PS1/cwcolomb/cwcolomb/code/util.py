@@ -53,33 +53,6 @@ def visualize_wordmap(wordmap, out_path=None):
     if out_path:
         plt.savefig(out_path, pad_inches=0)
 
-def c2_compare_images2wordmaps(images, wordmaps):
-    """
-    Visualize each of the given wordmaps for each the given images.
-
-    Returns
-    -------
-    None.
-    """
-    dbg_assert(len(wordmaps) == len(images))
-    N = len(wordmaps)
-    
-    plt.figure()
-    
-    for i in range(N):
-        plt.subplot(2, N, i+1)
-        plt.imshow(images[i])
-        plt.axis('equal')
-        plt.axis("off")
-        
-        plt.subplot(2, N, N+i+1)
-        plt.imshow(wordmaps[i], cmap='hsv')
-        plt.axis('equal')
-        plt.axis("off")
-
-    plt.subplots_adjust(left=0.05,right=0.95,top=0.95,bottom=0.05,wspace=0.05,hspace=0.05)
-    plt.show()
-
 def c2_debug():
     """Return true if custom debugging should be performed."""
     return True;

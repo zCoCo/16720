@@ -33,17 +33,12 @@ def main():
     #visual_words.compute_dictionary(opts, n_worker=n_cpu)
     
     ## Q1.3
-    # (Modified to show 3 images and wordmaps side by side as requested)
-    img_addrs = ('kitchen/sun_aasmevtpkslccptd.jpg', 'laundromat/sun_aakuktqwgbgavllp.jpg', 'highway/sun_abzhjprcojyuuqci.jpg')
-    dictionary = np.load(join(opts.out_dir, 'dictionary.npy'))
-    images = []
-    wordmaps = []
-    for img_addr in (img_addrs):
-        img_path = join(opts.data_dir, img_addr)
-        img = Image.open(img_path)
-        images.append(img)
-        wordmaps.append(visual_words.get_visual_words(opts, img, dictionary))
-    util.c2_compare_images2wordmaps(images, wordmaps)
+    #img_path = join(opts.data_dir, 'kitchen/sun_aasmevtpkslccptd.jpg')
+    #img = Image.open(img_path)
+    #img = np.array(img).astype(np.float32)/255
+    #dictionary = np.load(join(opts.out_dir, 'dictionary.npy'))
+    #wordmap = visual_words.get_visual_words(opts, img, dictionary)
+    #util.visualize_wordmap(wordmap)
 
     ## Q2.1-2.4
     # n_cpu = util.get_num_CPU()
