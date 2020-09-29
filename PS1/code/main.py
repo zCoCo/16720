@@ -30,7 +30,7 @@ def main():
 
     ## Q1.2
     n_cpu = util.get_num_CPU()
-    #visual_words.compute_dictionary(opts, n_worker=n_cpu)
+    visual_words.compute_dictionary(opts, n_worker=n_cpu)
     
     ## Q1.3
     # (Modified to show 3 images and wordmaps side by side as requested)
@@ -47,7 +47,7 @@ def main():
 
     ## Q2.1-2.4
     n_cpu = util.get_num_CPU()
-   # visual_recog.build_recognition_system(opts, n_worker=n_cpu)
+    visual_recog.build_recognition_system(opts, n_worker=n_cpu)
 
     ## Q2.5
     n_cpu = util.get_num_CPU()
@@ -56,7 +56,7 @@ def main():
     print(conf)
     print(accuracy)
     np.savetxt(join(opts.out_dir, 'confmat.csv'), conf, fmt='%d', delimiter=',')
-    # np.savetxt(join(opts.out_dir, 'accuracy.txt'), [accuracy], fmt='%g')
+    np.savetxt(join(opts.out_dir, 'accuracy.txt'), [accuracy], fmt='%g')
 
 
 if __name__ == '__main__':

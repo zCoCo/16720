@@ -112,7 +112,7 @@ def c2_load_dictionary(opts):
 
 def c2_debug():
     """Return true if custom debugging should be performed."""
-    return True;
+    return False;
 
 def dbg_assert(statement, msg=""):
     """Perform an assertion if debugging is on."""
