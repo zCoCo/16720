@@ -23,6 +23,7 @@ def computeH(x1, x2):
         
         
     """
+    SVD Approach (works fine, just slower than eig. Keeping in case of issue with eig.)
     _, s, Vh = np.linalg.svd(A, full_matrices=True)
     if s.shape[0] > 8 and abs(s[8]) > 1e-6:
         warnings.warn("Min singular value should be approximately zero.")
@@ -192,6 +193,7 @@ def compositeH(H2to1, template, img):
     
     return composite_img
 
+'''
 if __name__ == "__main__":
     """Unit testing"""
     testing = False
@@ -219,5 +221,6 @@ if __name__ == "__main__":
         assert np.allclose( x1, H_reconstruction(H_RANSAC) ), "Known Noiseless Homography Reconstruction Failed with RANSAC"
         
         print("[Tests Complete]")
+'''
 
 
