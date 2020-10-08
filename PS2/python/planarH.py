@@ -56,8 +56,18 @@ def computeH_norm(x1, x2):
     x2_centered = x2 - mean2
 
 	#Normalize the points so that the largest distance from the origin is equal to sqrt(2)
-    scale1 = 1.0 / np.max(np.absolute(x1_centered), axis=0) # scaling for each column (xvalues,yvalues) in x1
-    scale2 = 1.0 / np.max(np.absolute(x2_centered), axis=0) # scaling for each column (xvalues,yvalues) in x2
+    max1 = np.max(np.absolute(x1_centered), axis=0)
+    max2 = np.max(np.absolute(x2_centered), axis=0)
+    if np.count_nonzero(max1==0) == 0:
+        scale1 = 1.0 / max1 # scaling for each column (xvalues,yvalues) in x1
+    else:
+        warnings.warn("Zeros in maximum value for a column in x1. Ignoring scaling for that point collection.")
+        scale1 = np.ones(max1.shape) # can't scale so don't. this likely won't generate the solution given this anomaly so this is fine.
+    if np.count_nonzero(max2==0) == 0:
+        scale2 = 1.0 / max2 # scaling for each column (xvalues,yvalues) in x2
+    else:
+        warnings.warn("Zeros in maximum value for a column in x2. Ignoring scaling for that point collection")
+        scale2 = np.ones(max2.shape) # can't scale so don't. this likely won't generate the solution given this anomaly so this is fine.
     x1_normalized = x1_centered * scale1
     x2_normalized = x2_centered * scale2
 
