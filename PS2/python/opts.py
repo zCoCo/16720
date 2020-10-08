@@ -1,11 +1,11 @@
-'''
+"""
 Hyperparameters wrapped in argparse
-This file contains most of tuanable parameters for this homework
+This file contains most of tunable parameters for this homework
 
 
 You can change the values by changing their default fields or by command-line
 arguments. For example, "python q2_1_4.py --sigma 0.15 --ratio 0.7"
-'''
+"""
 
 import argparse
 

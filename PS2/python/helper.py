@@ -10,7 +10,7 @@ def briefMatch(desc1,desc2,ratio):
 
 	matches = skimage.feature.match_descriptors(desc1,desc2,'hamming',cross_check=True,max_ratio=ratio)
 	return matches
-	
+
 	
 
 def plotMatches(im1,im2,matches,locs1,locs2):
