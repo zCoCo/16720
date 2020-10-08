@@ -27,6 +27,8 @@ def get_opts():
     ## Additional options (add your own hyperparameters here)
     parser.add_argument('--c2_testing', type=bool, default=False,
                         help='Whether this run is for testing.')
+    parser.add_argument('--save_addr', type=str, default=None,
+                        help='Address to export content to.')
     ##
     opts = parser.parse_args()
 

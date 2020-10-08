@@ -34,11 +34,18 @@ def q224():
     # Display Result:
     plt.figure()
     plt.imshow(cv2.cvtColor(composite, cv2.COLOR_BGR2RGB))
-    plt.show()
+    plt.show(block=False)
+    
+    # Save result if address given:
+    if opts.save_addr is not None:
+        plt.savefig(opts.save_addr)
     
 if opts.c2_testing:
     # Profile if testing
-    import timeit
-    print(timeit.timeit(q224))
+    import time
+    t0 = time.perf_counter();
+    q224()
+    print(time.perf_counter() - t0)
+    
 else:
     q224()
