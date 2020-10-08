@@ -25,7 +25,8 @@ def get_opts():
                         help='the tolerance value for considering a point to be an inlier')
 
     ## Additional options (add your own hyperparameters here)
-
+    parser.add_argument('--c2_testing', type=bool, default=False,
+                        help='Whether this run is for testing.')
     ##
     opts = parser.parse_args()
 
