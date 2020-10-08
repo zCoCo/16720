@@ -13,7 +13,7 @@ opts = get_opts()
 image = cv2.imread('../data/cv_cover.jpg') # Note: matchPics takes care of grayscaling
 
 hist_angles = np.arange(36)*10
-hist_matches = np.zeros((1,36)) # preallocate for speed
+hist_matches = np.zeros(36) # preallocate for speed
 
 for i in range(36):
 	# Rotate Image
