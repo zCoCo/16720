@@ -12,7 +12,7 @@ def loadVid(path):
 
 	i = 0
 	# Read until video is completed
-	while(cap.isOpened()):
+	while(cap.isOpened() and i < 60):
 		# Capture frame-by-frame
 		i += 1
 		ret, frame = cap.read()
