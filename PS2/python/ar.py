@@ -1,10 +1,8 @@
-import os, math, multiprocessing
+import multiprocessing
 import numpy as np
 import cv2
 #Import necessary functions
-import skimage.io 
-import skimage.color
-import matplotlib.pyplot as plt
+import skimage.io
 from opts import get_opts
 
 # Import necessary functions
@@ -25,12 +23,14 @@ def process_frame(args):
     cv_cover = c2__frame_worker_cache['cv_cover']
     source_xmin = c2__frame_worker_cache['source_xmin']
     source_xmax = c2__frame_worker_cache['source_xmax']
+    source_ymin = c2__frame_worker_cache['source_ymin']
+    source_ymax = c2__frame_worker_cache['source_ymax']
     
     
     print('\t Processing Frame {}/{}'.format(img_idx+1,frame_count))
     
     # Crop center to appropriate aspect ratio then scale to meet target size:
-    source_frame = source_frame[:, source_xmin:source_xmax, :]
+    source_frame = source_frame[source_ymin:source_ymax, source_xmin:source_xmax, :]
     source_frame = cv2.resize(source_frame, (cv_cover.shape[1], cv_cover.shape[0]))
     
     # Compute Homography:
@@ -42,7 +42,7 @@ def process_frame(args):
     
     return composite
 
-def initialize_frame_workers(frame_count, opts, cv_cover, source_xmin,source_xmax):
+def initialize_frame_workers(frame_count, opts, cv_cover, source_xmin,source_xmax, source_ymin,source_ymax):
     """
     Initialize pool of the workers.
     
@@ -50,7 +50,7 @@ def initialize_frame_workers(frame_count, opts, cv_cover, source_xmin,source_xma
     and don't vary by worker.
     """
     global c2__frame_worker_cache
-    c2__frame_worker_cache = {"frame_count": frame_count, "opts": opts, "cv_cover": cv_cover, "source_xmin": source_xmin, "source_xmax": source_xmax}
+    c2__frame_worker_cache = {"frame_count": frame_count, "opts": opts, "cv_cover": cv_cover, "source_xmin": source_xmin, "source_xmax": source_xmax, "source_ymin": source_ymin, "source_ymax": source_ymax}
 
 
 def main():
@@ -71,7 +71,21 @@ def main():
     vid_target = loadVid('../data/book.mov')
     
     # Precompute cropping parameters:
-    ideal_source_width = cv_cover.shape[1]/cv_cover.shape[0] * vid_source.shape[1]
+    # also eliminate the horizontal black bars:
+    # determine the bar size as 2* the centroid position of the dark (10%) values 
+    # in the upper half of the first frame:
+    source_frame1 = vid_source[0,:,:,1]
+    mid = source_frame1.shape[0]//2
+    bar_centroid = 0
+    for c in range(source_frame1.shape[1]):
+        bar_centroid = bar_centroid + np.mean(np.where(source_frame1[0:mid,c] < 0.1*255))
+    bar_centroid = bar_centroid // source_frame1.shape[1]
+    bar_height = 2*bar_centroid
+    
+    source_ymin = int(bar_height)
+    source_ymax = int(vid_source.shape[1]-bar_height)
+    
+    ideal_source_width = cv_cover.shape[1]/cv_cover.shape[0] * (source_ymax-source_ymin)
     mid = vid_source.shape[2]/2
     source_xmin = int(np.round(mid - ideal_source_width/2))
     source_xmax = int(np.round(mid + ideal_source_width/2))
@@ -79,7 +93,7 @@ def main():
     # Execute Render Pipeline:
     print('Pooling...')
     # Process frames in parallel, stack them at the end (since there are no inter-frame dependencies, this application is great for parallelization):
-    pool = multiprocessing.Pool(n_cpu, initializer=initialize_frame_workers, initargs=(vid_source.shape[0],opts,cv_cover,source_xmin,source_xmax))
+    pool = multiprocessing.Pool(n_cpu, initializer=initialize_frame_workers, initargs=(vid_source.shape[0],opts,cv_cover,source_xmin,source_xmax,source_ymin,source_ymax))
     pool_data = zip(range(len(vid_target)), vid_source, vid_target)
     vid_rendered = pool.map(process_frame, pool_data)
     pool.close()
