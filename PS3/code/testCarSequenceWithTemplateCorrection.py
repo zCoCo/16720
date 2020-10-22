@@ -57,7 +57,7 @@ for f in range(num_frames-1):
         rects_wcrt[f+1,:] = rects_wcrt[f,:]
     #print("{}/{}".format(f+2,num_frames))
 
-np.save('../result/carseqrects-wrct.npy', rects_wcrt) # Note: rect is allowed to be float according to Piazza @323
+np.save('../result/carseqrects-wcrt.npy', rects_wcrt) # Note: rect is allowed to be float according to Piazza @323
 
 for f in [1,100,200,300,400]:
     show_frame(f)

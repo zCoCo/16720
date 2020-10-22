@@ -48,14 +48,14 @@ def LucasKanade(It, It1, rect, threshold, num_iters, p0=np.zeros(2)):
         b = It[y_int,x_int] - It1_spline(xp,yp, grid=False)
         
         eigs, _ = np.linalg.eig(A.T@A)
-        if not np.all(eigs / np.max(eigs) > 1e-6):
-            warnings.warn("A is singular or ill-conditioned with eigs: {}".format(eigs))
+        if not np.all(np.abs(eigs / np.max(eigs)) > 1e-6):
+            warnings.warn("A.T@A is singular or ill-conditioned with eigs: {}".format(eigs))
             
         # Update:
         Dp = np.linalg.inv(A.T@A) @ A.T @ b
         p = p + Dp
         
-        # Check Termination Conditions3:
+        # Check Termination Conditions:
         iter_count = iter_count + 1
         if np.sum(Dp**2) < threshold or iter_count > num_iters:
             break

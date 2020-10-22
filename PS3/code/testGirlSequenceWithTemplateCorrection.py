@@ -57,7 +57,7 @@ for f in range(num_frames-1):
         rects_wcrt[f+1,:] = rects_wcrt[f,:]
     #print("{}/{}".format(f+2,num_frames))
 
-np.save('../result/girlseqrects-wrct.npy', rects_wcrt) # Note: rect is allowed to be float according to Piazza @323
+np.save('../result/girlseqrects-wcrt.npy', rects_wcrt) # Note: rect is allowed to be float according to Piazza @323
 
 for f in [1,20,40,60,80]:
     show_frame(f)
