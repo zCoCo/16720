@@ -16,7 +16,7 @@ def SubtractDominantMotion(image1, image2, threshold, num_iters, tolerance):
     """
     height, width = image1.shape
     
-    M = InverseCompositionAffine(image1, image2, threshold, num_iters)
+    M = LucasKanadeAffine(image1, image2, threshold, num_iters)
     
     # image 1 registered onto image 2:
     image1_onto_2 = warpAffine(image1, M[:2,:], (width,height)) # allowed to use cv2 here according to Piazza @327_f1

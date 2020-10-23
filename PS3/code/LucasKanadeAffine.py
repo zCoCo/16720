@@ -21,20 +21,13 @@ def LucasKanadeAffine(It, It1, threshold, num_iters):
             [0, 0, 1]
         ]);
     
-    def getDWDp(x):
-        """Calculate the Jacobian of W w.r.t. for a given position x=[x;y]."""
-        return np.asarray([
-            [x[0], x[1], 1, 0, 0, 0],
-            [0, 0, 0, x[0], x[1], 1]
-        ]);
-    
     # Precompute meshgrid (base):
     x, y = np.meshgrid(np.arange(It.shape[1]), np.arange(It.shape[0]))
     x = x.ravel()
     y = y.ravel()
     X = np.vstack((x,y)) # Matrix of coords of all pixels in image. row 0 is x positions, row 1 is y
     Xh = np.vstack((X,np.ones(X.shape[1]))) # X in homogeneous form (row of ones at bottom)
-    X_int = np.round(X).astype(np.int32) # round to ints for use as indices
+    X_int = X.astype(np.int32) # floors to ints for use as indices
     
     # Precompute Spline Functor:
     It1_spline = RectBivariateSpline(range(It1.shape[1]),range(It1.shape[0]), It1.T)
@@ -60,17 +53,33 @@ def LucasKanadeAffine(It, It1, threshold, num_iters):
         Xh_warped_in = Xh_warped[:,in_bounds] # All warped Xh coordinates which are still in bounds
         Xh_in = Xh[:,in_bounds] # The coordinates Xh of all unwarped pixels which correspond to the post-warp pixels which are still in bounds
 
+        # Some nice helpers:
+        ones = Xh_in[2]; # array of ones of size N_in
+        zeros = 0*ones; # array of zeros of size N_in
+
         # Compute Error Image (Template It - Warped It1)
         Ierr = It[X_int[1,in_bounds], X_int[0,in_bounds]] - It1_spline(Xh_in[0,:],Xh_in[1,:], grid=False)
         Ierr.shape = (-1,1)
 
+        # Compute Image Gradient:
+        gradI = np.zeros((1, 2, N_in))
+        gradI[0,0,:] = It1_spline(Xh_warped_in[0,:],Xh_warped_in[1,:], dx=1, grid=False) # Ix for all points in Xh_warped
+        gradI[0,1,:] = It1_spline(Xh_warped_in[0,:],Xh_warped_in[1,:], dy=1, grid=False) # Iy for all points in Xh_warped
+    
+        # Compute Jacobian dWdp at (x,p):
+        dWdp = np.asarray([
+            [Xh_in[0], Xh_in[1], ones, zeros, zeros, zeros],
+            [zeros, zeros, zeros, Xh_in[0], Xh_in[1], ones]
+        ]);
+        
         # Compute Steepest Descent Images (gradI(x')*dW/dp(x)) for every point:
-        gradI = np.zeros((N_in, 2))
-        gradI[:,0] = It1_spline(Xh_warped_in[0,:],Xh_warped_in[1,:], dx=1, grid=False) # Ix for all points in Xh_warped
-        gradI[:,1] = It1_spline(Xh_warped_in[0,:],Xh_warped_in[1,:], dy=1, grid=False) # Iy for all points in Xh_warped
-        steepest = np.zeros((N_in,6))
-        for i in range(N_in):
-            steepest[i,:] = gradI[i,:] @ getDWDp(Xh_in[:2,i])
+        # gradI and dWdp are 1*2*N_in and 2*6*N_in 3D stacks of the gradI and 
+        # dWdp matrices corresponding to each point in Xh.
+        # This einsum effectively loops through that third dimensions, computes 
+        # gradI[:,:,i]@dWdp[:,:,i], and stacks up the results in a 1*6*N_pts matrix
+        # (but *much* more efficiently).
+        steepest = np.einsum('mnr,ndr->mdr', gradI, dWdp)
+        steepest = steepest.T.reshape((N_in,6)) # Reshape to more easily work with subsequent linalg operations
             
         # Compute Hessian:
         H = steepest.T @ steepest
