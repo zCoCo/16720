@@ -4,14 +4,16 @@ from nn import *
 
 train_data = scipy.io.loadmat('../data/nist36_train.mat')
 valid_data = scipy.io.loadmat('../data/nist36_valid.mat')
+test_data = scipy.io.loadmat('../data/nist36_test.mat')
 
 train_x, train_y = train_data['train_data'], train_data['train_labels']
 valid_x, valid_y = valid_data['valid_data'], valid_data['valid_labels']
+test_x, test_y = test_data['test_data'], test_data['test_labels']
 
 max_iters = 50
 # pick a batch size, learning rate
 batch_size = 5 ##
-learning_rate = 3e-3 ## 3.5e-3 best
+learning_rate = 3.5e-3 ## 3.5e-3 best
 hidden_size = 64
 
 num_examples = train_x.shape[0]
@@ -26,6 +28,7 @@ nn_input_size = train_x.shape[1] # unrolled 32x32 image = 1024
 nn_output_size = train_y.shape[1] # 36 classes = 26 letters of alphabet + 10 digits
 initialize_weights(nn_input_size,hidden_size,params,'layer1')
 initialize_weights(hidden_size,nn_output_size,params,'output')
+pre_training_weights_layer1 = params['Wlayer1'].copy() # copy for later visualization
 
 # with default settings, you should get loss < 150 and accuracy > 80%
 epoch_number = np.arange(max_iters)
@@ -77,17 +80,6 @@ for itr in range(max_iters):
     if itr % 2 == 0:
         print("itr: {:02d} \t loss: {:.2f} \t acc : {:.2f}".format(itr,total_loss,total_acc))
 
-# Produce plots for 3.1:
-import matplotlib.pyplot as plt
-# Accuracy Plot:
-plt.figure()
-plt.plot(epoch_number, epoch_train_acc)
-plt.plot(epoch_number, epoch_valid_acc)
-plt.xlabel('Epoch Number')
-plt.ylabel('Accuracy')
-plt.legend(['Accuracy on Training Set', 'Accuracy on Validation Set'])
-plt.show()
-
 # run on validation set and report accuracy! should be above 75%
 h1 = forward(valid_x,params,'layer1')
 probs = forward(h1,params,'output',softmax)
@@ -104,26 +96,76 @@ saved_params = {k:v for k,v in params.items() if '_' not in k}
 with open('q3_weights.pickle', 'wb') as handle:
     pickle.dump(saved_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+# Produce plots for Q3.1 and Q3.2:
+import matplotlib.pyplot as plt
+# Accuracy Plot:
+plt.figure()
+plt.plot(epoch_number, epoch_train_acc)
+plt.plot(epoch_number, epoch_valid_acc)
+plt.xlabel('Epoch Number')
+plt.ylabel('Accuracy')
+plt.title('Q3.1 - Learning Rate: {}, Batch Size: {} \n Final Validation Set Accuracy: {:.4f}'.format(learning_rate, batch_size, valid_acc))
+plt.legend(['Accuracy on Training Set', 'Accuracy on Validation Set'])
+plt.show()
+
+# Loss Plot:
+plt.figure()
+plt.plot(epoch_number, epoch_loss)
+plt.xlabel('Epoch Number')
+plt.ylabel('Cross-Entropy Loss per Sample')
+plt.title('Q3.1 - Learning Rate: {}, Batch Size: {}'.format(learning_rate, batch_size, valid_acc))
+plt.show()
+
+# Report performance on test set for Q3.2:
+h1 = forward(test_x,params,'layer1')
+probs = forward(h1,params,'output',softmax)
+_, test_acc = compute_loss_and_acc(test_y, probs)
+print('Testing accuracy: ',test_acc)
+
 # Q3.3
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 # visualize weights here
-##########################
-##### your code here #####
-##########################
-
+if False: # True to plot
+    # For untrained layer 1:
+    fig = plt.figure()
+    grid = ImageGrid(fig, 111, nrows_ncols = (8,8), axes_pad=0.04)
+    for i in range(pre_training_weights_layer1.shape[1]):
+        grid[i].imshow(pre_training_weights_layer1[:,i].reshape(32,32))
+    plt.show()
+    
+    # For trained layer 1:
+    fig = plt.figure()
+    grid = ImageGrid(fig, 111, nrows_ncols = (8,8), axes_pad=0.04)
+    for i in range(params['Wlayer1'].shape[1]):
+        grid[i].imshow(params['Wlayer1'][:,i].reshape(32,32))
+    plt.show()
+    
 # Q3.4
-confusion_matrix = np.zeros((train_y.shape[1],train_y.shape[1]))
+confusion_matrix = np.zeros((test_y.shape[1],test_y.shape[1]))
 
 # compute comfusion matrix here
-##########################
-##### your code here #####
-##########################
+# Run NN forward on testing set (per @563 on Piazza):
+h1 = forward(test_x,params,'layer1')
+probs = forward(h1,params,'output',softmax)
+# Get labels:
+prediction = np.argmax(probs, axis=1)
+true_class = np.argmax(test_y, axis=1)
+# Compute confusion matrix:
+# For each true label:
+for label in range(test_y.shape[1]):
+    # Get predicted values for each with this label:
+    preds = prediction[true_class == label]
+    # Count occurences of each unique value:
+    vals, counts = np.unique(preds, return_counts=True)
+    confusion_matrix[label,vals] = counts
 
 import string
 plt.imshow(confusion_matrix,interpolation='nearest')
 plt.grid(True)
 plt.xticks(np.arange(36),string.ascii_uppercase[:26] + ''.join([str(_) for _ in range(10)]))
 plt.yticks(np.arange(36),string.ascii_uppercase[:26] + ''.join([str(_) for _ in range(10)]))
+plt.ylabel('Actual Class')
+plt.xlabel('Predicted Class')
 plt.show()

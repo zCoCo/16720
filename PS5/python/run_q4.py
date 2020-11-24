@@ -23,6 +23,8 @@ warnings.simplefilter(action='ignore', category=UserWarning)
 for img in os.listdir('../images'):
     im1 = skimage.img_as_float(skimage.io.imread(os.path.join('../images',img)))
     bboxes, bw = findLetters(im1)
+    
+    plt.imshow(im1); plt.show();
 
     plt.imshow(bw)
     for bbox in bboxes:
