@@ -27,8 +27,9 @@ def sigmoid(x):
     # b/c ln(1.79e+308) = 709.77, x should be clipped at -709, so no number
     # larger than e^(--709) is computed (note: numpy doesn't have a problem with 
     # e^(y) where y is very negative, only when y is very positive)
-    xx = np.clip(x, a_min = -709, a_max = None)
+    xx = np.clip(x, a_min = -708, a_max = 708)
     res = 1 / (1 + np.exp(-xx))
+    res[np.abs(res) < 1e-38] = 0. # just round out insanely small numbers
     return res
 
 ############################## Q 2.2.1 ##############################

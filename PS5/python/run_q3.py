@@ -127,7 +127,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 # visualize weights here
-if False: # True to plot
+if True: # True to plot
     # For untrained layer 1:
     fig = plt.figure()
     grid = ImageGrid(fig, 111, nrows_ncols = (8,8), axes_pad=0.04)
